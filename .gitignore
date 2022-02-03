@@ -3,7 +3,10 @@
 .env
 **/.env
 
-# do-nothing binary
+# do-nothing binary (no longer there)
 hermes
+
+# coverage text file
+coverage.txt
 
 # leave a newline
