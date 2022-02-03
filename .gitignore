@@ -1,2 +1,6 @@
 # placeholder comment, don't know what needs exception yet.
+# don't upload my API key used for testing!
 .env
+**/.env
+
+# leave a newline
