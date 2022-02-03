@@ -1,10 +1,7 @@
 package sendinblue
 
 import (
-	"os"
 	"testing"
-
-	"github.com/joho/godotenv"
 )
 
 func TestEmail_SendBlue(t *testing.T) {
@@ -27,9 +24,10 @@ func TestEmail_SendBlue(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		// TODO: Add secret mechanism for testing
+		// against a separate API key
 		{
-			name: "happy path email to sam",
+			name: "unhappy path",
 			fields: fields{
 				To:          "OtherGuy@Myres.dev",
 				FromName:    "Go Automated Test",
@@ -43,18 +41,19 @@ func TestEmail_SendBlue(t *testing.T) {
 			args: args{
 				// I'm sorry for this.
 				apiKey: func() string {
-					err := godotenv.Load()
-					if err != nil {
-						t.Errorf("error loading .env file for test: %s", err.Error())
-					}
-					key, ok := os.LookupEnv("SIB_APIKEY")
-					if !ok {
-						t.Errorf("SIB_APIKEY not in env vars for test")
-					}
-					return key
+					// err := godotenv.Load()
+					// if err != nil {
+					// 	t.Errorf("error loading .env file for test: %s", err.Error())
+					// }
+					// key, ok := os.LookupEnv("SIB_APIKEY")
+					// if !ok {
+					// 	t.Errorf("SIB_APIKEY not in env vars for test")
+					// }
+					// return key
+					return "bad_key"
 				}(),
 			},
-			wantErr: false,
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
