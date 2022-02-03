@@ -3,7 +3,6 @@ module github.com/samiam2013/hermes
 go 1.17
 
 require (
-	github.com/joho/godotenv v1.4.0
 	github.com/sendinblue/APIv3-go-library v2.0.0+incompatible
 	github.com/sirupsen/logrus v1.8.1
 )
