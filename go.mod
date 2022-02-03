@@ -1,4 +1,4 @@
-module hermes
+module github.com/samiam2013/hermes
 
 go 1.17
 
