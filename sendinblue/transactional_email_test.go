@@ -1,6 +1,7 @@
 package sendinblue
 
 import (
+	"reflect"
 	"testing"
 )
 
@@ -70,6 +71,54 @@ func TestEmail_SendBlue(t *testing.T) {
 			}
 			if err := e.SendBlue(tt.args.apiKey); (err != nil) != tt.wantErr {
 				t.Errorf("Email.SendBlue() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestNewTextEmail(t *testing.T) {
+	type args struct {
+		to          string
+		fromName    string
+		fromAddr    string
+		subject     string
+		replyToName string
+		replyToAddr string
+		text        []byte
+	}
+	tests := []struct {
+		name string
+		args args
+		want Email
+	}{
+		// TODO: Add test cases.
+	{
+		name: "",
+		args: args{
+			to:          "to@place.tld",
+			fromName:    "automated sender",
+			fromAddr:    "automated@place.tld",
+			subject:     "some subject line",
+			replyToName: "reply toguy",
+			replyToAddr: "replyto@place.tld",
+			text:        []byte("some text email"),
+		},
+		want: Email{
+			To:          "to@place.tld",
+			FromName:    "automated sender",
+			FromAddr:    "automated@place.tld",
+			Subject:     "some subject line",
+			ReplyToName: "reply toguy",
+			ReplyToAddr: "replyto@place.tld",
+			Text:        []byte("some text email"),
+			HTML:        "",
+		},
+	},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := NewTextEmail(tt.args.to, tt.args.fromName, tt.args.fromAddr, tt.args.subject, tt.args.replyToName, tt.args.replyToAddr, tt.args.text); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewTextEmail() = %v, want %v", got, tt.want)
 			}
 		})
 	}
