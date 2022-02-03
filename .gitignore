@@ -3,4 +3,7 @@
 .env
 **/.env
 
+# do-nothing binary
+hermes
+
 # leave a newline
