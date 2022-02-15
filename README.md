@@ -9,3 +9,8 @@ liable to be worthless, use at your own risk.
 ![credit egonelbre/gophers](https://github.com/egonelbre/gophers/blob/10cc13c5e29555ec23f689dc985c157a8d4692ab/vector/projects/network.svg)
 
 credit https://github.com/egonelbre/gophers
+
+## To Do: 
+
+- [x] add sendingrid code from freedomunits codebase
+- [ ] create an interface email module where email.Email is implemented and sent by both the sendinblue and sendgrid code.
