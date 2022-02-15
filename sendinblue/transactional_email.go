@@ -10,8 +10,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// Email struct to be created and sent through library functions
-type Email struct {
+// BlueEmail struct to be created and sent through library functions
+type BlueEmail struct {
 	To          string
 	FromName    string
 	FromAddr    string
@@ -23,8 +23,8 @@ type Email struct {
 }
 
 // NewTextEmail returns a simple text Email struct with attached Send.*() funcs
-func NewTextEmail(to, fromName, fromAddr, subject, replyToName, replyToAddr string, text []byte) Email {
-	e := Email{
+func NewTextEmail(to, fromName, fromAddr, subject, replyToName, replyToAddr string, text []byte) BlueEmail {
+	e := BlueEmail{
 		To:          to,
 		FromName:    fromName,
 		FromAddr:    fromAddr,
@@ -37,8 +37,8 @@ func NewTextEmail(to, fromName, fromAddr, subject, replyToName, replyToAddr stri
 	return e
 }
 
-// SendBlue take a SendInBlue API key and creates a new client and sends an Email struct
-func (e *Email) SendBlue(apiKey string) error {
+// Send take a SendInBlue API key and creates a new client and sends an Email struct
+func (e *BlueEmail) Send(apiKey string) error {
 	var ctx context.Context
 	sibClient := newBlueClient(ctx, apiKey)
 	textcontent := string(e.Text) // TODO what if this text is really REALLY big?

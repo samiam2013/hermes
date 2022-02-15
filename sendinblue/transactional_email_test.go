@@ -59,7 +59,7 @@ func TestEmail_SendBlue(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			e := &Email{
+			e := &BlueEmail{
 				To:          tt.fields.To,
 				FromName:    tt.fields.FromName,
 				FromAddr:    tt.fields.FromAddr,
@@ -69,7 +69,7 @@ func TestEmail_SendBlue(t *testing.T) {
 				Text:        tt.fields.Text,
 				HTML:        tt.fields.HTML,
 			}
-			if err := e.SendBlue(tt.args.apiKey); (err != nil) != tt.wantErr {
+			if err := e.Send(tt.args.apiKey); (err != nil) != tt.wantErr {
 				t.Errorf("Email.SendBlue() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -89,7 +89,7 @@ func TestNewTextEmail(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want Email
+		want BlueEmail
 	}{
 		// TODO: Add test cases.
 	{
@@ -103,7 +103,7 @@ func TestNewTextEmail(t *testing.T) {
 			replyToAddr: "replyto@place.tld",
 			text:        []byte("some text email"),
 		},
-		want: Email{
+		want: BlueEmail{
 			To:          "to@place.tld",
 			FromName:    "automated sender",
 			FromAddr:    "automated@place.tld",
