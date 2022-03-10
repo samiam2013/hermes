@@ -9,4 +9,7 @@ hermes
 # coverage text file
 coverage.txt
 
+# sendmail binary
+cmd/sendmail/sendmail
+
 # leave a newline

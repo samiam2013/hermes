@@ -18,4 +18,7 @@ require (
 	google.golang.org/protobuf v1.25.0 // indirect
 )
 
-require github.com/sendgrid/rest v2.6.8+incompatible // indirect
+require (
+	github.com/joho/godotenv v1.4.0
+	github.com/sendgrid/rest v2.6.8+incompatible // indirect
+)
