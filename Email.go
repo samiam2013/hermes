@@ -2,6 +2,7 @@ package hermes
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/samiam2013/hermes/libsendgrid"
@@ -18,7 +19,7 @@ type Email struct {
 	HTMLBody    string
 	FromName    string
 	FromAddr    string
-	credentials credentials
+	credentials map[uint]credentials
 }
 
 // credentials provides a way to store the credentials to send an email alongside the email's data
@@ -60,7 +61,8 @@ func NewTransactionalWithEnv(creds map[string]string, platform uint) Email {
 	// hand back an empty email struct with platform creds list
 	new := Email{}
 	new.FromAddr = creds[requiredVars[platform]["sender"]]
-	new.credentials = credentials{
+	new.credentials = make(map[uint]credentials)
+	new.credentials[platform] = credentials{
 		set:      true,
 		platform: platform,
 		list:     creds,
@@ -72,7 +74,7 @@ func parseCreds() (map[string]string, uint, error) {
 	// parse .env from this folder?
 	credentials := map[string]string{}
 	foundSet := false
-	platform := uint(0)
+	platform := uint(len(requiredVars)) // will cause an error if indexed
 	for platformID, requiredSet := range requiredVars {
 		satisfied := true
 		for _, envVar := range requiredSet {
@@ -83,13 +85,17 @@ func parseCreds() (map[string]string, uint, error) {
 		}
 		if satisfied {
 			foundSet = true
-			platform = platformID
 			for _, found := range requiredSet {
 				credentials[found] = os.Getenv(found)
 			}
-			break
+			// if a platform wasn't already found (platform has init value) set it
+			if platform == uint(len(requiredVars)) {
+				platform = platformID
+			} else {
+				// what to do if a platform was already found ?
+				continue
+			}
 		}
-
 	}
 	if !foundSet {
 		return nil, uint(len(requiredVars) + 1), // platform id will cause a panic if accessed blindly (intended effect)
@@ -101,24 +107,34 @@ func parseCreds() (map[string]string, uint, error) {
 
 // Send a platform ambiguous email structure :D
 func (e *Email) Send() error {
-	if !e.credentials.set {
+	if len(e.credentials) == 0 {
 		return fmt.Errorf("no credentials set on email! (do you need hermes.NewTransactional()?)")
 	}
-
-	switch e.credentials.platform {
-	case SendGrid:
-		return e.sendSendGrid()
-	case SendInBlue:
-		return e.sendSendInBlue()
-	default:
-		return fmt.Errorf("platform not resolved")
+	for platformID, _ := range e.credentials {
+		switch platformID {
+		case SendGrid:
+			err := e.sendSendGrid()
+			if err != nil {
+				log.Println("SendGrid failed in Send() switch, continuing")
+			}
+			return nil
+		case SendInBlue:
+			err := e.sendSendInBlue()
+			if err != nil {
+				log.Println("SendInBlue failed in Send() switch, continuing")
+			}
+			return nil
+		default:
+			return fmt.Errorf("platform not resolved")
+		}
 	}
+	return nil
 }
 
 func (e *Email) sendSendGrid() error {
 	apiSenderIdx := requiredVars[SendGrid]["sender"]
 	sgEmail := libsendgrid.GridEmail{
-		FromAddr: e.credentials.list[apiSenderIdx], //or e.FromAddr?
+		FromAddr: e.credentials[SendGrid].list[apiSenderIdx], //or e.FromAddr?
 		FromName: e.FromName,
 		ToAddr:   e.ToAddr,
 		//ToName: e.ToName,
@@ -129,7 +145,7 @@ func (e *Email) sendSendGrid() error {
 		HTML:     e.HTMLBody,
 	}
 	apiKeyIdx := requiredVars[SendGrid]["key"]
-	err := sgEmail.Send(e.credentials.list[apiKeyIdx])
+	err := sgEmail.Send(e.credentials[SendGrid].list[apiKeyIdx])
 	//log.Printf("email being sent: %+v", sgEmail)
 	if err != nil {
 		return err
@@ -138,5 +154,6 @@ func (e *Email) sendSendGrid() error {
 }
 
 func (e *Email) sendSendInBlue() error {
+
 	return fmt.Errorf("not implemented")
 }

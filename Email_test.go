@@ -53,10 +53,12 @@ func TestNewTransactionWithEnv(t *testing.T) {
 				ReplyToAddr: "",
 				TextBody:    "",
 				HTMLBody:    "",
-				credentials: credentials{
-					set:      true,
-					platform: 0,
-					list:     sibCreds,
+				credentials: map[uint]credentials{
+					SendInBlue: {
+						set:      true,
+						platform: SendInBlue,
+						list:     sibCreds,
+					},
 				},
 			},
 		},
