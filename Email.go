@@ -19,23 +19,16 @@ type Email struct {
 	HTMLBody    string
 	FromName    string
 	FromAddr    string
-	credentials map[uint]credentials
+	credentials map[uint]map[string]string
 }
 
-// credentials provides a way to store the credentials to send an email alongside the email's data
-type credentials struct {
-	set      bool
-	platform uint
-	list     map[string]string
-}
-
-// choices of platform
+// constant uint values for the choices of platform
 const (
 	SendInBlue = iota
 	SendGrid
 )
 
-var requiredVars = map[uint]map[string]string{
+var envVarNames = map[uint]map[string]string{
 	SendGrid: {
 		"key":    "SENDGRID_API_KEY",
 		"sender": "SENDGRID_SENDER",
@@ -60,13 +53,9 @@ func NewTransactional() (Email, error) {
 func NewTransactionalWithEnv(creds map[string]string, platform uint) Email {
 	// hand back an empty email struct with platform creds list
 	new := Email{}
-	new.FromAddr = creds[requiredVars[platform]["sender"]]
-	new.credentials = make(map[uint]credentials)
-	new.credentials[platform] = credentials{
-		set:      true,
-		platform: platform,
-		list:     creds,
-	}
+	new.FromAddr = creds[envVarNames[platform]["sender"]]
+	new.credentials = make(map[uint]map[string]string)
+	new.credentials[platform] = creds
 	return new
 }
 
@@ -74,8 +63,8 @@ func parseCreds() (map[string]string, uint, error) {
 	// parse .env from this folder?
 	credentials := map[string]string{}
 	foundSet := false
-	platform := uint(len(requiredVars)) // will cause an error if indexed
-	for platformID, requiredSet := range requiredVars {
+	platform := uint(len(envVarNames)) // will cause an error if indexed
+	for platformID, requiredSet := range envVarNames {
 		satisfied := true
 		for _, envVar := range requiredSet {
 			if os.Getenv(envVar) == "" {
@@ -89,7 +78,7 @@ func parseCreds() (map[string]string, uint, error) {
 				credentials[found] = os.Getenv(found)
 			}
 			// if a platform wasn't already found (platform has init value) set it
-			if platform == uint(len(requiredVars)) {
+			if platform == uint(len(envVarNames)) {
 				platform = platformID
 			} else {
 				// what to do if a platform was already found ?
@@ -98,7 +87,7 @@ func parseCreds() (map[string]string, uint, error) {
 		}
 	}
 	if !foundSet {
-		return nil, uint(len(requiredVars) + 1), // platform id will cause a panic if accessed blindly (intended effect)
+		return nil, uint(len(envVarNames) + 1), // platform id will cause a panic if accessed blindly (intended effect)
 			fmt.Errorf("did not find a set of credentials in the environment")
 	}
 	return credentials, platform, nil
@@ -132,9 +121,9 @@ func (e *Email) Send() error {
 }
 
 func (e *Email) sendSendGrid() error {
-	apiSenderIdx := requiredVars[SendGrid]["sender"]
+	apiSenderIdx := envVarNames[SendGrid]["sender"]
 	sgEmail := libsendgrid.GridEmail{
-		FromAddr: e.credentials[SendGrid].list[apiSenderIdx], //or e.FromAddr?
+		FromAddr: e.credentials[SendGrid][apiSenderIdx], //or e.FromAddr?
 		FromName: e.FromName,
 		ToAddr:   e.ToAddr,
 		//ToName: e.ToName,
@@ -144,8 +133,8 @@ func (e *Email) sendSendGrid() error {
 		TextBody: e.TextBody,
 		HTML:     e.HTMLBody,
 	}
-	apiKeyIdx := requiredVars[SendGrid]["key"]
-	err := sgEmail.Send(e.credentials[SendGrid].list[apiKeyIdx])
+	apiKeyIdx := envVarNames[SendGrid]["key"]
+	err := sgEmail.Send(e.credentials[SendGrid][apiKeyIdx])
 	//log.Printf("email being sent: %+v", sgEmail)
 	if err != nil {
 		return err
