@@ -1,7 +1,7 @@
-package sendgrid
-
+package libsendgrid
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/sendgrid/sendgrid-go"
@@ -11,26 +11,26 @@ import (
 
 // GridEmail contains basic email data to, from, etc. and can be easily extended
 type GridEmail struct {
-	From     string
+	FromAddr string
 	FromName string
-	To       string
+	ToAddr   string
 	Subject  string
 	TextBody string
 	HTML     string
 }
 
 // Send reciever function calls sendgrid API for a transactional email
-func (email *GridEmail) Send(sendGridKey, domain string) error {
+func (email *GridEmail) Send(sendGridKey string) error {
 	var from *mail.Email
-	if email.From == "" {
-		from = mail.NewEmail("Hermes Mail Sender", "no-reply@"+domain)
-	} else {
-		from = mail.NewEmail(email.FromName, email.From)
+	if email.FromAddr == "" {
+		return fmt.Errorf("cannot send without email.FromAddr defined")
 	}
-	sendTo := mail.NewEmail("", email.To)
+	from = mail.NewEmail(email.FromName, email.FromAddr)
+	sendTo := mail.NewEmail("", email.ToAddr)
 
 	var html string
 	if email.HTML != "" {
+		// TODO sanitize with bluemonday
 		html = email.HTML
 	} else {
 		html = "<html><pre>" + email.TextBody + "</pre></html>"
@@ -48,7 +48,7 @@ func (email *GridEmail) Send(sendGridKey, domain string) error {
 			log.Info("email was accepted by sendgrid")
 		} else {
 			log.Warn("email was accepted but with status code:",
-				response.StatusCode)
+				response.StatusCode, "body:", response.Body)
 		}
 	}
 	return nil

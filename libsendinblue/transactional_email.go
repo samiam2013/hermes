@@ -1,4 +1,4 @@
-package sendinblue
+package libsendinblue
 
 import (
 	"context"

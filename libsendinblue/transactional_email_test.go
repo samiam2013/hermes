@@ -1,4 +1,4 @@
-package sendinblue
+package libsendinblue
 
 import (
 	"reflect"
@@ -92,28 +92,28 @@ func TestNewTextEmail(t *testing.T) {
 		want BlueEmail
 	}{
 		// TODO: Add test cases.
-	{
-		name: "",
-		args: args{
-			to:          "to@place.tld",
-			fromName:    "automated sender",
-			fromAddr:    "automated@place.tld",
-			subject:     "some subject line",
-			replyToName: "reply toguy",
-			replyToAddr: "replyto@place.tld",
-			text:        []byte("some text email"),
+		{
+			name: "",
+			args: args{
+				to:          "to@place.tld",
+				fromName:    "automated sender",
+				fromAddr:    "automated@place.tld",
+				subject:     "some subject line",
+				replyToName: "reply toguy",
+				replyToAddr: "replyto@place.tld",
+				text:        []byte("some text email"),
+			},
+			want: BlueEmail{
+				To:          "to@place.tld",
+				FromName:    "automated sender",
+				FromAddr:    "automated@place.tld",
+				Subject:     "some subject line",
+				ReplyToName: "reply toguy",
+				ReplyToAddr: "replyto@place.tld",
+				Text:        []byte("some text email"),
+				HTML:        "",
+			},
 		},
-		want: BlueEmail{
-			To:          "to@place.tld",
-			FromName:    "automated sender",
-			FromAddr:    "automated@place.tld",
-			Subject:     "some subject line",
-			ReplyToName: "reply toguy",
-			ReplyToAddr: "replyto@place.tld",
-			Text:        []byte("some text email"),
-			HTML:        "",
-		},
-	},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

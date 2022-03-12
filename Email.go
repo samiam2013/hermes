@@ -3,19 +3,21 @@ package hermes
 import (
 	"fmt"
 	"os"
+
+	"github.com/samiam2013/hermes/libsendgrid"
 )
 
 // Email defineds a data structure for a single message from one to one person independent of platform
 type Email struct {
-	FromAddr    string
-	FromName    string
-	ToAddr      string
 	ToName      string
+	ToAddr      string
+	TextBody    string
 	Subject     string
 	ReplyToName string
 	ReplyToAddr string
-	TextBody    string
 	HTMLBody    string
+	FromName    string
+	FromAddr    string
 	credentials credentials
 }
 
@@ -45,7 +47,6 @@ var requiredVars = map[uint]map[string]string{
 
 // NewTransactional looks at the environment and returns a sendable email or an error
 func NewTransactional() (Email, error) {
-	fmt.Printf("NewTrasactional() not yet implemented")
 	// try parsing env for a set of platform variables
 	creds, platform, err := parseCreds()
 	if err != nil {
@@ -76,6 +77,7 @@ func parseCreds() (map[string]string, uint, error) {
 		satisfied := true
 		for _, envVar := range requiredSet {
 			if os.Getenv(envVar) == "" {
+				fmt.Println("checking for envVar:", envVar)
 				satisfied = false
 			}
 		}
@@ -99,5 +101,42 @@ func parseCreds() (map[string]string, uint, error) {
 
 // Send a platform ambiguous email structure :D
 func (e *Email) Send() error {
+	if !e.credentials.set {
+		return fmt.Errorf("no credentials set on email! (do you need hermes.NewTransactional()?)")
+	}
+
+	switch e.credentials.platform {
+	case SendGrid:
+		return e.sendSendGrid()
+	case SendInBlue:
+		return e.sendSendInBlue()
+	default:
+		return fmt.Errorf("platform not resolved")
+	}
+}
+
+func (e *Email) sendSendGrid() error {
+	apiSenderIdx := requiredVars[SendGrid]["sender"]
+	sgEmail := libsendgrid.GridEmail{
+		FromAddr: e.credentials.list[apiSenderIdx], //or e.FromAddr?
+		FromName: e.FromName,
+		ToAddr:   e.ToAddr,
+		//ToName: e.ToName,
+		//ReplyToName: e.ReplyToName
+		//ReplyToAddr: e.ReplyToAddr
+		Subject:  e.Subject,
+		TextBody: e.TextBody,
+		HTML:     e.HTMLBody,
+	}
+	apiKeyIdx := requiredVars[SendGrid]["key"]
+	err := sgEmail.Send(e.credentials.list[apiKeyIdx])
+	//log.Printf("email being sent: %+v", sgEmail)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (e *Email) sendSendInBlue() error {
 	return fmt.Errorf("not implemented")
 }
