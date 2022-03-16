@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/samiam2013/hermes/libsendgrid"
+	"github.com/samiam2013/hermes/libsendinblue"
 )
 
 // Email defineds a data structure for a single message from one to one person independent of platform
@@ -104,13 +105,13 @@ func (e *Email) Send() error {
 		case SendGrid:
 			err := e.sendSendGrid()
 			if err != nil {
-				log.Println("SendGrid failed in Send() switch, continuing")
+				log.Println("SendGrid failed in Send() switch:", err.Error())
 			}
 			return nil
 		case SendInBlue:
 			err := e.sendSendInBlue()
 			if err != nil {
-				log.Println("SendInBlue failed in Send() switch, continuing")
+				log.Println("SendInBlue failed in Send() switch:", err.Error())
 			}
 			return nil
 		default:
@@ -143,6 +144,14 @@ func (e *Email) sendSendGrid() error {
 }
 
 func (e *Email) sendSendInBlue() error {
-
-	return fmt.Errorf("not implemented")
+	newEmail := libsendinblue.NewTextEmail(
+		e.ToAddr, e.FromName, e.FromAddr, e.Subject,
+		e.ReplyToName, e.ReplyToAddr, []byte(e.TextBody))
+	// e.ToName, e.HTML still available
+	apiKeyIdx := envVarNames[SendInBlue]["key"]
+	err := newEmail.Send(e.credentials[SendInBlue][apiKeyIdx])
+	if err != nil {
+		return err
+	}
+	return nil
 }
