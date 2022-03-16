@@ -8,6 +8,12 @@ require (
 )
 
 require (
+	github.com/gobuffalo/envy v1.10.1 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
+	github.com/rogpeppe/go-internal v1.8.0 // indirect
+)
+
+require (
 	github.com/antihax/optional v1.0.0 // indirect
 	github.com/golang/protobuf v1.4.2 // indirect
 	github.com/sendgrid/sendgrid-go v3.11.0+incompatible
@@ -20,5 +26,6 @@ require (
 
 require (
 	github.com/joho/godotenv v1.4.0
+	github.com/mailgun/mailgun-go v2.0.0+incompatible
 	github.com/sendgrid/rest v2.6.8+incompatible // indirect
 )
