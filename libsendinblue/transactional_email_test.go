@@ -16,13 +16,9 @@ func TestEmail_SendBlue(t *testing.T) {
 		Text        []byte
 		HTML        string
 	}
-	type args struct {
-		apiKey string
-	}
 	tests := []struct {
 		name    string
 		fields  fields
-		args    args
 		wantErr bool
 	}{
 		// TODO: Add secret mechanism for testing
@@ -39,21 +35,6 @@ func TestEmail_SendBlue(t *testing.T) {
 				Text:        []byte("this is body text for the test"),
 				HTML:        "",
 			},
-			args: args{
-				// I'm sorry for this.
-				apiKey: func() string {
-					// err := godotenv.Load()
-					// if err != nil {
-					// 	t.Errorf("error loading .env file for test: %s", err.Error())
-					// }
-					// key, ok := os.LookupEnv("SIB_APIKEY")
-					// if !ok {
-					// 	t.Errorf("SIB_APIKEY not in env vars for test")
-					// }
-					// return key
-					return "bad_key"
-				}(),
-			},
 			wantErr: true,
 		},
 	}
@@ -69,7 +50,7 @@ func TestEmail_SendBlue(t *testing.T) {
 				Text:        tt.fields.Text,
 				HTML:        tt.fields.HTML,
 			}
-			if err := e.Send(tt.args.apiKey); (err != nil) != tt.wantErr {
+			if err := e.Send(); (err != nil) != tt.wantErr {
 				t.Errorf("Email.SendBlue() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/sendinblue/APIv3-go-library/lib"
 	sendinblue "github.com/sendinblue/APIv3-go-library/lib"
@@ -38,8 +39,9 @@ func NewTextEmail(to, fromName, fromAddr, subject, replyToName, replyToAddr stri
 }
 
 // Send take a SendInBlue API key and creates a new client and sends an Email struct
-func (e *BlueEmail) Send(apiKey string) error {
+func (e *BlueEmail) Send() error {
 	var ctx context.Context
+	apiKey := os.Getenv("SENDINBLUE_API_KEY")
 	sibClient := newBlueClient(ctx, apiKey)
 	textcontent := string(e.Text) // TODO what if this text is really REALLY big?
 	body := lib.SendSmtpEmail{

@@ -3,6 +3,7 @@ package libsendgrid
 import (
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/sendgrid/sendgrid-go"
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
@@ -20,7 +21,7 @@ type GridEmail struct {
 }
 
 // Send reciever function calls sendgrid API for a transactional email
-func (email *GridEmail) Send(sendGridKey string) error {
+func (email *GridEmail) Send() error {
 	var from *mail.Email
 	if email.FromAddr == "" {
 		return fmt.Errorf("cannot send without email.FromAddr defined")
@@ -37,6 +38,7 @@ func (email *GridEmail) Send(sendGridKey string) error {
 	}
 
 	message := mail.NewSingleEmail(from, email.Subject, sendTo, email.TextBody, html)
+	sendGridKey := os.Getenv("SENDGRID_API_KEY")
 	client := sendgrid.NewSendClient(sendGridKey)
 	response, err := client.Send(message)
 	if err != nil {
