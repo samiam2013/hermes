@@ -114,7 +114,7 @@ func (e *Email) Send() error {
 	if len(e.credentials) == 0 {
 		return fmt.Errorf("no credentials set on email! (do you need hermes.NewTransactional()?)")
 	}
-	for platformID, _ := range e.credentials {
+	for platformID := range e.credentials {
 		switch platformID {
 		case SendGrid:
 			return e.sendSendGrid()
