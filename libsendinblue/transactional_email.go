@@ -24,14 +24,14 @@ type BlueEmail struct {
 }
 
 // NewTextEmail returns a simple text Email struct with attached Send.*() funcs
-func NewTextEmail(to, fromName, fromAddr, subject, replyToName, replyToAddr string, text []byte) BlueEmail {
+func NewTextEmail(to, fromName, fromAddr, subject, replyToName, replyToAddr, html string, text []byte) BlueEmail {
 	e := BlueEmail{
 		To:          to,
 		FromName:    fromName,
 		FromAddr:    fromAddr,
 		Subject:     subject,
 		Text:        text,
-		HTML:        "",
+		HTML:        html,
 		ReplyToName: replyToName,
 		ReplyToAddr: replyToAddr,
 	}
@@ -52,6 +52,7 @@ func (e *BlueEmail) Send() error {
 		To: []lib.SendSmtpEmailTo{
 			{Email: e.To}},
 		TextContent: textcontent, // using text here, not html to help prevent XSS via email
+		HtmlContent: e.HTML,
 		Subject:     e.Subject,
 		ReplyTo: &lib.SendSmtpEmailReplyTo{
 			Email: e.ReplyToAddr,

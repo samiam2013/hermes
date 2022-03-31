@@ -2,8 +2,10 @@ package hermes
 
 import (
 	"fmt"
+	"log"
 	"os"
 
+	"github.com/microcosm-cc/bluemonday"
 	"github.com/samiam2013/hermes/libmailgun"
 	"github.com/samiam2013/hermes/libsendgrid"
 	"github.com/samiam2013/hermes/libsendinblue"
@@ -39,6 +41,8 @@ const (
 	MailGun
 )
 
+// EnvVarNames stores the set of required .env keys required
+//	by each platform when sending
 var EnvVarNames = map[uint]map[string]string{
 	SendGrid: {
 		"key":    "SENDGRID_API_KEY",
@@ -67,10 +71,18 @@ func NewTransactional() (Email, error) {
 // NewTransactionalWithEnv can be called with the environment variables rather than parsing them with os.GetEnv
 func NewTransactionalWithEnv(creds map[string]string, platform uint) Email {
 	// hand back an empty email struct with platform creds list
-	new := Email{}
-	new.FromAddr = creds[EnvVarNames[platform]["sender"]]
-	new.credentials = make(map[uint]map[string]string)
-	new.credentials[platform] = creds
+	new := Email{
+		ToName:      "",
+		ToAddr:      "",
+		TextBody:    "",
+		Subject:     "",
+		ReplyToName: "",
+		ReplyToAddr: "",
+		HTMLBody:    "",
+		FromName:    "",
+		FromAddr:    creds[EnvVarNames[platform]["sender"]],
+		credentials: map[uint]map[string]string{platform: creds},
+	}
 	return new
 }
 
@@ -110,21 +122,33 @@ func parseCreds() (map[string]string, uint, error) {
 }
 
 // Send a platform ambiguous email structure :D
-func (e *Email) Send() error {
+func (e *Email) Send() (err error) {
 	if len(e.credentials) == 0 {
 		return fmt.Errorf("no credentials set on email! (do you need hermes.NewTransactional()?)")
 	}
 	for platformID := range e.credentials {
 		switch platformID {
 		case SendGrid:
-			return e.sendSendGrid()
+			if err = e.sendSendGrid(); err != nil {
+				log.Printf("sendgrid send attempt failed: %s\n", err.Error())
+				continue
+			}
+			return
 		case SendInBlue:
-			return e.sendSendInBlue()
+			if err = e.sendSendInBlue(); err != nil {
+				log.Printf("sendblue send attempt failed: %s\n", err.Error())
+				continue
+			}
+			return
 		case MailGun:
-			return e.sendMailGun()
+			if err = e.sendMailGun(); err != nil {
+				log.Printf("sendgrid send attempt failed: %s\n", err.Error())
+				continue
+			}
+			return
 
 		default:
-			return fmt.Errorf("platform not resolved")
+			return fmt.Errorf("platform %d not resolved", platformID)
 		}
 	}
 	return nil
@@ -132,31 +156,36 @@ func (e *Email) Send() error {
 
 func (e *Email) sendSendGrid() error {
 	apiSenderIdx := EnvVarNames[SendGrid]["sender"]
-	sgEmail := libsendgrid.GridEmail{
-		FromAddr: e.credentials[SendGrid][apiSenderIdx], //or e.FromAddr?
-		FromName: e.FromName,
-		ToAddr:   e.ToAddr,
-		//ToName: e.ToName,
-		//ReplyToName: e.ReplyToName
-		//ReplyToAddr: e.ReplyToAddr
-		Subject:  e.Subject,
-		TextBody: e.TextBody,
-		HTML:     e.HTMLBody,
+	sgEmail, err := libsendgrid.NewGridEmail(
+		e.credentials[SendGrid][apiSenderIdx],
+		e.ToAddr,
+		e.Subject,
+		e.TextBody,
+		sanitizeHTML(e.HTMLBody))
+	//e.FromAddr
+	//e.FromName,
+	if err != nil {
+		log.Fatalf("failed to create sendgrid message: %s", err.Error())
 	}
+	//ToName: e.ToName,
+	//ReplyToName: e.ReplyToName
+	//ReplyToAddr: e.ReplyToAddr
 	return sgEmail.Send()
 }
 
 func (e *Email) sendSendInBlue() error {
-	newEmail := libsendinblue.NewTextEmail(
+	blueEmail := libsendinblue.NewTextEmail(
 		e.ToAddr,
 		e.FromName,
 		e.FromAddr,
 		e.Subject,
 		e.ReplyToName,
 		e.ReplyToAddr,
-		[]byte(e.TextBody))
-	// e.ToName, e.HTML still available
-	return newEmail.Send()
+		sanitizeHTML(e.HTMLBody),
+		[]byte(e.TextBody),
+		// e.ToName, e.HTML still available
+	)
+	return blueEmail.Send()
 
 }
 
@@ -166,6 +195,13 @@ func (e *Email) sendMailGun() error {
 		e.FromAddr,
 		e.Subject,
 		e.TextBody,
+		sanitizeHTML(e.HTMLBody),
 	)
 	return newEmail.Send()
+}
+
+func sanitizeHTML(input string) string {
+	p := bluemonday.UGCPolicy()
+	output := p.Sanitize(input)
+	return output
 }

@@ -20,6 +20,19 @@ type GridEmail struct {
 	HTML     string
 }
 
+// NewGridEmail provides a GridEmail struct for sending
+func NewGridEmail(from, to, subject, text, html string) (GridEmail, error) {
+	email := GridEmail{
+		FromAddr: from,
+		ToAddr:   to,
+		Subject:  subject,
+		TextBody: text,
+		HTML:     html,
+		//FromName: from,
+	}
+	return email, nil
+}
+
 // Send reciever function calls sendgrid API for a transactional email
 func (email *GridEmail) Send() error {
 	var from *mail.Email

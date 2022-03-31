@@ -66,6 +66,7 @@ func TestNewTextEmail(t *testing.T) {
 		replyToName string
 		replyToAddr string
 		text        []byte
+		HTML        string
 	}
 	tests := []struct {
 		name string
@@ -83,6 +84,7 @@ func TestNewTextEmail(t *testing.T) {
 				replyToName: "reply toguy",
 				replyToAddr: "replyto@place.tld",
 				text:        []byte("some text email"),
+				HTML:        "some html <i>email content</i>",
 			},
 			want: BlueEmail{
 				To:          "to@place.tld",
@@ -92,13 +94,13 @@ func TestNewTextEmail(t *testing.T) {
 				ReplyToName: "reply toguy",
 				ReplyToAddr: "replyto@place.tld",
 				Text:        []byte("some text email"),
-				HTML:        "",
+				HTML:        "some html <i>email content</i>",
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewTextEmail(tt.args.to, tt.args.fromName, tt.args.fromAddr, tt.args.subject, tt.args.replyToName, tt.args.replyToAddr, tt.args.text); !reflect.DeepEqual(got, tt.want) {
+			if got := NewTextEmail(tt.args.to, tt.args.fromName, tt.args.fromAddr, tt.args.subject, tt.args.replyToName, tt.args.replyToAddr, tt.args.HTML, tt.args.text); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewTextEmail() = %v, want %v", got, tt.want)
 			}
 		})
