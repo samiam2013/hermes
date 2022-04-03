@@ -12,5 +12,5 @@ credit https://github.com/egonelbre/gophers
 
 ## To Do: 
 
-- [x] add sendingrid code from freedomunits codebase
-- [ ] finish send method for Email struct
+- [x] finish send method for Email struct
+- [ ] add GH CI/CD since TravisCI credit expired
