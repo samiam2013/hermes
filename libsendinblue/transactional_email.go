@@ -3,6 +3,7 @@ package libsendinblue
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 
@@ -61,7 +62,11 @@ func (e *BlueEmail) Send() error {
 	}
 	create, httpResp, err := sibClient.TransactionalEmailsApi.SendTransacEmail(ctx, body)
 	if err != nil {
-		return fmt.Errorf("error sending email: %s httpResp from SendBlue(): %+v", err.Error(), httpResp)
+		var body []byte
+		if body, err = ioutil.ReadAll(httpResp.Body); err != nil {
+			log.Error("failed to read response from SIB:", err.Error())
+		}
+		return fmt.Errorf("error sending email: %s httpResp from SendBlue(): %+v", err.Error(), string(body))
 	}
 	if httpResp.StatusCode != http.StatusCreated {
 		return fmt.Errorf("created msg with id %v, *non*-accepted http code: %d",
@@ -86,7 +91,12 @@ func newBlueClient(ctx context.Context, apiKey string) (sib *sendinblue.APIClien
 		return
 	}
 	if resp.StatusCode != http.StatusOK {
-		log.Errorln("GetAccount Object:", result, " GetAccount Response: ", resp)
+		body, err := ioutil.ReadAll(resp.Body)
+		defer resp.Body.Close()
+		if err != nil {
+			log.Errorln("Failed reading body of response for error", err.Error())
+		}
+		log.Errorln("GetAccount Object:", result, " GetAccount Response: ", string(body))
 	}
 	return
 }
