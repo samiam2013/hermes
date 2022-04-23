@@ -62,11 +62,7 @@ func (e *BlueEmail) Send() error {
 	}
 	create, httpResp, err := sibClient.TransactionalEmailsApi.SendTransacEmail(ctx, body)
 	if err != nil {
-		var body []byte
-		if body, err = ioutil.ReadAll(httpResp.Body); err != nil {
-			log.Error("failed to read response from SIB:", err.Error())
-		}
-		return fmt.Errorf("error sending email: %s httpResp from SendBlue(): %+v", err.Error(), string(body))
+		return fmt.Errorf("error sending email: %s httpResp from SendBlue(): %+v", err.Error(), httpResp)
 	}
 	if httpResp.StatusCode != http.StatusCreated {
 		return fmt.Errorf("created msg with id %v, *non*-accepted http code: %d",
