@@ -24,9 +24,9 @@ require (
 	github.com/antihax/optional v1.0.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/sendgrid/sendgrid-go v3.11.0+incompatible
-	golang.org/x/net v0.0.0-20220225172249-27dd8689420f // indirect
+	golang.org/x/net v0.7.0 // indirect
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8 // indirect
-	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e // indirect
+	golang.org/x/sys v0.5.0 // indirect
 	google.golang.org/appengine v1.6.6 // indirect
 	google.golang.org/protobuf v1.26.0 // indirect
 )
